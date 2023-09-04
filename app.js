@@ -16,7 +16,7 @@ app.use(
   })
 );
 
-const api_version = `/noomanee/api/${appVersion}`;
+const api_version = `/air/api/${appVersion}`;
 app.use(api_version, require('./portal/api_portal'));
 //create app server
 // const key = fs.readFileSync('/usr/share/nginx/ssl/ipstthailand.com/ipstthailand.com.key');
@@ -29,4 +29,4 @@ app.use(api_version, require('./portal/api_portal'));
 //     var port = server.address().port;
 //     console.log("Example app listening at https://%s:%s", host, port);
 // });
-app.listen(3005);
+app.listen(3000);
