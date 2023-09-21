@@ -11,28 +11,32 @@ var moment = require('moment');
 var axios = require('axios');
 const { jsonFormatSuccess, jsonFormatError } = require('../utils/format_json');
 
-console.log(process.env.USER);
-router.post('/data/insert', async (req, res) => {
+// console.log(process.env.USER);
+router.post('/station/data/insert', async (req, res) => {
   try {
     const body = req.body;
+    var nowdate = moment().format('YYYY-MM-DD HH:mm:ss');
     const results = await sql_command.query(`
-    INSERT INTO (station_id,pm25,pm10,power,datecreate,)
-    VALUE (${body.station_id},${body.pm25},${body.pm10},${body.power},${body.datecreate})`);
+    INSERT INTO data(station_id,pm25,pm10,power,datecreate)
+    VALUES (${body.station_id},${body.pm25},${body.pm10},${body.power},'${nowdate}')`);
 
     await sql_command.query(`
     UPDATE station
     SET last_pm25 = ${body.pm25},
     last_pm10 = ${body.pm10},
     last_power = ${body.power},
-    last_send_date = ${body.datecreate},
+    last_send_date = '${nowdate}'
+    WHERE station_id = ${body.station_id}
     `);
-    res.json(jsonFormatSuccess(results));
+    const last_results = await sql_command.query(`
+    SELECT * FROM station WHERE station_id = ${body.station_id}`);
+    res.json(jsonFormatSuccess(last_results));
   } catch (error) {
     res.json(jsonFormatError(constants.ERROR_CODE_DATABASE, error));
   }
 });
 
-router.post('/data', async (req, res) => {
+router.post('/station', async (req, res) => {
   try {
     const body = req.body;
     console.log(body);
@@ -40,6 +44,30 @@ router.post('/data', async (req, res) => {
     SELECT * FROM station WHERE station_id = ${body.station_id}`);
     res.json(jsonFormatSuccess(results));
   } catch (error) {
+    res.json(jsonFormatError(constants.ERROR_CODE_DATABASE, error));
+  }
+});
+
+router.get('/station/all', async (req, res) => {
+  try {
+    const body = req.body;
+    console.log(body);
+    const results = await sql_command.query(`
+    SELECT * FROM station`);
+    res.json(jsonFormatSuccess(results));
+  } catch (error) {
+    res.json(jsonFormatError(constants.ERROR_CODE_DATABASE, error));
+  }
+});
+
+router.get('/station/:station_id', async (req, res) => {
+  try {
+    const params = req.params;
+    const results = await sql_command.query(`
+    SELECT * FROM station WHERE station_id = ${params.station_id}`);
+    res.json(jsonFormatSuccess(results));
+  } catch (error) {
+    console.log(error);
     res.json(jsonFormatError(constants.ERROR_CODE_DATABASE, error));
   }
 });
